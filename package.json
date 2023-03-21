@@ -2,15 +2,16 @@
   "name": "what-the-fox-back-end",
   "version": "1.0.0",
   "description": "301 group project",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Lauren Perkins, Abshir Ibrahim, Thomas Lau, Trey Young",
   "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "mongoose": "^7.0.2"
   }
 }
