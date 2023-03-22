@@ -28,14 +28,19 @@ app.delete("/foxMemes/:id", deleteFoxMemes);
 app.put("/foxMemes/:id", putFoxs);
 
 async function getFoxMemes(req, res, next) {
-  try {
+  verifyUser(req, async (err, user) => {
+    if (err) {
+      console.error(err);
+      res.send("invalid token");
+    } else {
+      try {
     let results = await FoxMeme.find({});
     res.status(200).send(results);
-    console.log("foxes");
+    console.log("get foxes");
   } catch (err) {
     next(err);
   }
-}
+}})}
 
 async function postFoxMemes(req, res, next) {
   verifyUser(req, async (err, user) => {
