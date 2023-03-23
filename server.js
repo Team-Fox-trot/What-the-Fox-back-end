@@ -28,21 +28,26 @@ app.delete("/foxMemes/:id", deleteFoxMemes);
 app.put("/foxMemes/:id", putFoxs);
 
 async function getFoxMemes(req, res, next) {
-  try {
-    let results = await FoxMeme.find({});
-    res.status(200).send(results);
-    console.log("foxes");
-  } catch (err) {
-    next(err);
-  }
-}
-
-async function postFoxMemes(req, res, next) {
   verifyUser(req, async (err, user) => {
     if (err) {
       console.error(err);
       res.send("invalid token");
     } else {
+      try {
+    let results = await FoxMeme.find({});
+    res.status(200).send(results);
+    console.log("get foxes");
+  } catch (err) {
+    next(err);
+  }
+}})}
+
+async function postFoxMemes(req, res, next) {
+  // verifyUser(req, async (err, user) => {
+  //   if (err) {
+  //     console.error(err);
+  //     res.send("invalid token");
+  //   } else {
       try {
         let createdFoxMeme = await FoxMeme.create(req.body);
         res.status(200).send(createdFoxMeme);
@@ -50,8 +55,8 @@ async function postFoxMemes(req, res, next) {
         next(err);
       }
     }
-  });
-}
+//   });
+// }
 async function getAFoxMeme(req, res, next) {
   verifyUser(req, async (err, user) => {
     if (err) {
@@ -70,28 +75,28 @@ async function getAFoxMeme(req, res, next) {
 }
 
 async function deleteFoxMemes(req, res, next) {
-  verifyUser(req, async (err, user) => {
-    if (err) {
-      console.error(err);
-      res.send("invalid token");
-    } else {
+  // verifyUser(req, async (err, user) => {
+  //   if (err) {
+  //     console.error(err);
+  //     res.send("invalid token");
+  //   } else {
       try {
         let id = req.params.id;
         await FoxMeme.findByIdAndDelete(id);
-        res.status(200).send(id, imageURL, userInput);
+        res.status(200).send('fox delete');
       } catch (err) {
         next(err);
       }
     }
-  });
-}
+//   });
+// }
 
 async function putFoxs(req, res, next) {
-  verifyUser(req, async (err, user) => {
-    if (err) {
-      console.error(err);
-      res.send("invalid token");
-    } else {
+  // verifyUser(req, async (err, user) => {
+  //   if (err) {
+  //     console.error(err);
+  //     res.send("invalid token");
+  //   } else {
       try {
         let id = req.params.id;
         let updatedFoxMeme = req.body;
@@ -108,8 +113,8 @@ async function putFoxs(req, res, next) {
         next(err);
       }
     }
-  });
-}
+//   });
+// }
 
 app.get("/hello", (request, response) => {
   response.send("It's alive!");
