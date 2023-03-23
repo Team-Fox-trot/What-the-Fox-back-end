@@ -5,6 +5,7 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const FoxMeme = require("./models/foxMeme.js");
+const verifyUser = require("./auth");
 
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
@@ -21,51 +22,99 @@ app.use(express.json());
 const PORT = process.env.PORT || 3002;
 
 app.get("/foxMemes", getFoxMemes);
+app.get("/foxMemes/:id", getAFoxMeme);
 app.post("/foxMemes", postFoxMemes);
 app.delete("/foxMemes/:id", deleteFoxMemes);
 app.put("/foxMemes/:id", putFoxs);
 
 async function getFoxMemes(req, res, next) {
-  try {
+  verifyUser(req, async (err, user) => {
+    if (err) {
+      console.error(err);
+      res.send("invalid token");
+    } else {
+      try {
     let results = await FoxMeme.find({});
     res.status(200).send(results);
-    console.log("foxes");
+    console.log("get foxes");
   } catch (err) {
     next(err);
   }
-}
+}})}
+
 async function postFoxMemes(req, res, next) {
-  try {
-    let createdFoxMeme = await FoxMeme.create(req.body);
-    res.status(200).send(createdFoxMeme);
-  } catch (err) {
-    next(err);
-  }
+  // verifyUser(req, async (err, user) => {
+  //   if (err) {
+  //     console.error(err);
+  //     res.send("invalid token");
+  //   } else {
+      try {
+        let createdFoxMeme = await FoxMeme.create(req.body);
+        res.status(200).send(createdFoxMeme);
+      } catch (err) {
+        next(err);
+      }
+    }
+//   });
+// }
+async function getAFoxMeme(req, res, next) {
+  verifyUser(req, async (err, user) => {
+    if (err) {
+      console.error(err);
+      res.send("invalid token");
+    } else {
+      try {
+        let id = req.params.id;
+        await FoxMeme.findById(id);
+        res.status(200).send(id);
+      } catch (err) {
+        next(err);
+      }
+    }
+  });
 }
 
 async function deleteFoxMemes(req, res, next) {
-  try {
-    let id = req.params.id;
-    await FoxMeme.findByIdAndDelete(id);
-    res.status(200).send(id);
-  } catch (err) {
-    next(err);
-  }
-}
+  // verifyUser(req, async (err, user) => {
+  //   if (err) {
+  //     console.error(err);
+  //     res.send("invalid token");
+  //   } else {
+      try {
+        let id = req.params.id;
+        await FoxMeme.findByIdAndDelete(id);
+        res.status(200).send('fox delete');
+      } catch (err) {
+        next(err);
+      }
+    }
+//   });
+// }
 
 async function putFoxs(req, res, next) {
-  try {
-    let id = req.params.id;
-    let updatedFoxMeme = req.body;
-    let updatedFoxMemeFromDB = await FoxMeme.findByIdAndUpdate(id, updatedFoxMeme, {
-      new: true,
-      overwrite: true,
-    });
-    res.status(200).send(updatedFoxMemeFromDB);
-  } catch (err) {
-    next(err);
-  }
-}
+  // verifyUser(req, async (err, user) => {
+  //   if (err) {
+  //     console.error(err);
+  //     res.send("invalid token");
+  //   } else {
+      try {
+        let id = req.params.id;
+        let updatedFoxMeme = req.body;
+        let updatedFoxMemeFromDB = await FoxMeme.findByIdAndUpdate(
+          id,
+          updatedFoxMeme,
+          {
+            new: true,
+            overwrite: true,
+          }
+        );
+        res.status(200).send(updatedFoxMemeFromDB);
+      } catch (err) {
+        next(err);
+      }
+    }
+//   });
+// }
 
 app.get("/hello", (request, response) => {
   response.send("It's alive!");
