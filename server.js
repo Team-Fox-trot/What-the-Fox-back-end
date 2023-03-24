@@ -6,6 +6,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const FoxMeme = require("./models/foxMeme.js");
 const verifyUser = require("./auth");
+const memeGeneratorFoxMeme = require("./module/memeGeneratorFoxMeme")
 
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
@@ -43,11 +44,7 @@ async function getFoxMemes(req, res, next) {
 }})}
 
 async function postFoxMemes(req, res, next) {
-  // verifyUser(req, async (err, user) => {
-  //   if (err) {
-  //     console.error(err);
-  //     res.send("invalid token");
-  //   } else {
+  req.body.memeURL = await memeGeneratorFoxMeme(req.body, res, next);
       try {
         let createdFoxMeme = await FoxMeme.create(req.body);
         res.status(200).send(createdFoxMeme);
@@ -75,11 +72,6 @@ async function getAFoxMeme(req, res, next) {
 }
 
 async function deleteFoxMemes(req, res, next) {
-  // verifyUser(req, async (err, user) => {
-  //   if (err) {
-  //     console.error(err);
-  //     res.send("invalid token");
-  //   } else {
       try {
         let id = req.params.id;
         await FoxMeme.findByIdAndDelete(id);
@@ -88,18 +80,14 @@ async function deleteFoxMemes(req, res, next) {
         next(err);
       }
     }
-//   });
-// }
+
 
 async function putFoxs(req, res, next) {
-  // verifyUser(req, async (err, user) => {
-  //   if (err) {
-  //     console.error(err);
-  //     res.send("invalid token");
-  //   } else {
       try {
         let id = req.params.id;
+        req.body.memeURL = await memeGeneratorFoxMeme(req.body, res, next);
         let updatedFoxMeme = req.body;
+        console.log(req.body);
         let updatedFoxMemeFromDB = await FoxMeme.findByIdAndUpdate(
           id,
           updatedFoxMeme,
@@ -125,6 +113,7 @@ app.get("/test", (request, response) => {
 });
 
 app.use((error, request, response, next) => {
+  console.log(error);
   response.status(500).send(error.message);
 });
 
