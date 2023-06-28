@@ -27,6 +27,47 @@ app.get("/foxMemes/:id", getAFoxMeme);
 app.post("/foxMemes", postFoxMemes);
 app.delete("/foxMemes/:id", deleteFoxMemes);
 app.put("/foxMemes/:id", putFoxs);
+app.put("/foxMemes/:id/like", async (req, res, next) => {
+  verifyUser(req, async (err, user) => {
+    if (err) {
+      console.error(err);
+      res.status(401).send('Invalid token: ' + err.message);
+      return;
+    }
+
+    try {
+      let foxMemeId = req.params.id;
+      let userId = user.sub;
+
+      await FoxMeme.findByIdAndUpdate(foxMemeId, { $addToSet: { likes: userId } });
+
+      res.status(200).send("Liked successfully");
+    } catch (err) {
+      next(err);
+    }
+  });
+});
+
+app.put("/foxMemes/:id/unlike", async (req, res, next) => {
+  verifyUser(req, async (err, user) => {
+    if (err) {
+      console.error(err);
+      res.send("invalid token");
+    } else {
+      try {
+        let foxMemeId = req.params.id;
+        let userId = user.sub;
+        
+        // Remove the user's ID from the likes array of the fox meme
+        await FoxMeme.findByIdAndUpdate(foxMemeId, { $pull: { likes: userId } });
+
+        res.status(200).send("Unliked successfully");
+      } catch (err) {
+        next(err);
+      }
+    }
+  });
+});
 
 async function getFoxMemes(req, res, next) {
   verifyUser(req, async (err, user) => {
@@ -35,25 +76,41 @@ async function getFoxMemes(req, res, next) {
       res.send("invalid token");
     } else {
       try {
-    let results = await FoxMeme.find({});
-    res.status(200).send(results);
-    console.log("get foxes");
-  } catch (err) {
-    next(err);
-  }
-}})}
+        // Assume the user's ID is available as user.sub
+        const userId = user.sub;
+        
+        // Modify the MongoDB query to filter by user ID
+        let results = await FoxMeme.find({ userId: userId });
+        
+        res.status(200).send(results);
+        console.log("get foxes");
+      } catch (err) {
+        next(err);
+      }
+    }
+  });
+}
 
 async function postFoxMemes(req, res, next) {
-  req.body.memeURL = await memeGeneratorFoxMeme(req.body, res, next);
+  verifyUser(req, async (err, user) => {
+    if (err) {
+      console.error(err);
+      res.send("invalid token");
+    } else {
       try {
+        req.body.memeURL = await memeGeneratorFoxMeme(req.body, res, next);
+        req.body.userId = user.sub; // Set the userId field
+        
         let createdFoxMeme = await FoxMeme.create(req.body);
+        
         res.status(200).send(createdFoxMeme);
       } catch (err) {
         next(err);
       }
     }
-//   });
-// }
+  });
+}
+
 async function getAFoxMeme(req, res, next) {
   verifyUser(req, async (err, user) => {
     if (err) {
@@ -117,8 +174,15 @@ app.use((error, request, response, next) => {
   response.status(500).send(error.message);
 });
 
+// Catch-all route
 app.get("*", (req, res) => {
-  res.send("The resource does not exist");
+  res.status(404).send("The resource does not exist");
+});
+
+// Error handling middleware
+app.use((error, request, response, next) => {
+  console.error(error);
+  response.status(500).send(error.message);
 });
 
 app.listen(PORT, () => console.log(`listening on ${PORT}`));
